@@ -1,0 +1,65 @@
+version: "3.9"
+
+services:
+
+  user-service:
+    build:
+      context: ./services/user
+    container_name: user-service
+    ports:
+      - "8001:8000"   # API
+      - "8004:8003"   # Metrics (container port 8003, host port 8004)
+    environment:
+      DB_HOST: postgres
+      DB_USER: app
+      DB_PASSWORD: app
+      DB_NAME: app
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  match-service:
+    build:
+      context: ./services/match
+    container_name: match-service
+    ports:
+      - "8002:8000"
+      - "8003:8003"
+    environment:
+      REDIS_HOST: redis
+      RABBITMQ_HOST: rabbitmq
+    depends_on:
+      - redis
+      - rabbitmq
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: app
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
