@@ -22,3 +22,4 @@ def get_users(request: Request):
     logger.info("GET /users called")
     USERS_COUNTER.inc()  # update metrics
     return [{"id": 1, "name": "Tamar"}]
+
